@@ -1,0 +1,93 @@
+---
+#1
+- name: enable Nginx with amazon linux
+  become: yes
+  shell: amazon-linux-extras enable nginx1
+
+- name: Yum install Nginx
+  become: yes
+  yum: 
+    name: nginx 
+    state: latest
+
+- name: enable nginx
+  become: yes
+  shell: systemctl enable nginx.service
+
+- name: start nginx
+  become: true
+  service:
+    name: nginx.service
+    state: started
+    
+#2
+
+- name: copy index page
+  become: yes
+  copy:
+   src: index.html
+   dest: /usr/share/nginx/html
+
+#3
+
+- name: copy template file to host
+  become: yes
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+  notify:
+    - Restart Nginx
+
+
+#4
+- name: copy index page
+  become: yes
+  template:
+  src: index.html.j2
+  dest: /usr/share/nginx/html/index.html
+
+
+#6
+- name: include enviroment variables file
+  include_vars:
+    file: /home/ubuntu/lab 2/vars/{{ environments }}.yaml
+
+#7
+- name:
+  block:
+
+  - name: enable Nginx with amazon linux
+    become: yes
+    shell: amazon-linux-extras enable nginx1
+
+  - name: Yum install Nginx
+    become: yes
+    yum: 
+      name: nginx 
+      state: latest
+
+  - name: enable nginx
+    become: yes
+    shell: systemctl enable nginx.service
+
+  - name: start nginx
+    become: true
+    service:
+      name: nginx.service
+      state: started
+      
+  - name: copy index page
+    become: yes
+    template:
+      src: index.html.j2
+      dest: /usr/share/nginx/html/index.html
+
+  - name: copy template file to host
+    become: yes
+    template:
+      src: nginx.conf.j2
+      dest: /etc/nginx/nginx.conf
+    notify:
+      - Restart Nginx
+  when: "'{{environments}}' in group_names" 
+
